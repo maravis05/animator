@@ -1,6 +1,7 @@
 import os
 import tkinter.filedialog
 import shutil
+from datetime import datetime
 
 
 # currently hardcoded to use jpg as input file type
@@ -40,7 +41,7 @@ def create_mkv(working_dir, fps):
     # -video_size {resolution}
 
     os.system(
-        f"ffmpeg -framerate {fps} -i {working_dir}/temp/frame.%06d.jpg {working_dir}/clip.mkv"
+        f"ffmpeg -framerate {fps} -i {working_dir}/temp/frame.%06d.jpg {working_dir}/clip_{datetime.now().timestamp()}.mkv"
     )
     shutil.rmtree(f"{working_dir}/temp", ignore_errors=True)
 
@@ -58,10 +59,11 @@ def get_fps(frames):
 
 
 def get_odir():
-    input("Press [ENTER] to select *output* directory for images.\n")
+    print("Select *output* directory for images.\n")
     output_dir = tkinter.filedialog.askdirectory()
     try:
-        open(f"{output_dir}/test", mode="x")
+        with open(f"{output_dir}/test", mode="x") as fp:
+         print('directory writable...')
     except:
         print("Having trouble writing to that directory.")
         get_odir()
@@ -71,15 +73,15 @@ def get_odir():
 
 
 def get_sfiles():
-
-    input("Press [ENTER] to select *source* directory for images.\n")
-
+    print("Select *source* directory for images.\n")
     source_dir = tkinter.filedialog.askdirectory()
     frames = []
+
     print("Scanning directory for image files...")
+    supported_types = ['.jpg', '.jpeg', '.png']
     for entry in os.scandir(source_dir):
         if entry.is_file():
-            if ".jpg" in entry.name.casefold() or ".jpeg" in entry.name.casefold():
+            if any([ext in entry.name.casefold() for ext in supported_types]):
                 frames.append(entry.name)
 
     if len(frames) < 1:
